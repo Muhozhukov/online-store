@@ -2,6 +2,7 @@
 const uuid = require('uuid');
 const path = require('path');
 const Device = require('../models/device');
+const DeviceRating = require('../models/rating');
 const deviceInfo = require('../models/deviceInfo');
 const ApiError = require('../error/ApiError');
 
@@ -62,6 +63,21 @@ class DeviceController {
     const info = await deviceInfo.find({ deviceId: id });
     Device.findOne({ _id: id })
       .then((device) => res.send({ info, device }));
+  }
+
+  async rateDevice(req, res) {
+    const { id } = req.params;
+    const { userId, rate } = req.body;
+    await DeviceRating.create({
+      deviceId: id,
+      userId,
+      rate,
+    });
+    const ratings = await DeviceRating.find({ deviceId: id });
+    const rateSum = ratings.reduce((acc, number) => acc + number, 0);
+    const avgRate = rateSum / ratings.length;
+    const ratedDevice = await Device.findByIdAndUpdate(id, { rating: avgRate }, { new: true });
+    res.send(ratedDevice);
   }
 }
 

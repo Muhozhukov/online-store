@@ -13,11 +13,7 @@ const { PORT } = process.env;
 const { DB_URL } = process.env;
 
 const app = express();
-mongoose.connect(DB_URL, {
-  // useNewUrlParser: true,
-  // useCreateIndex: true,
-  // useFindAndModify: false
-});
+mongoose.connect(DB_URL);
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.resolve(__dirname, 'static')));

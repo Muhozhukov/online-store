@@ -6,5 +6,6 @@ const router = new Router();
 router.post('/', checkRole('Админ'), deviceController.create);
 router.get('/', deviceController.getAll);
 router.get('/:id', deviceController.getOne);
+router.put('/:id', deviceController.rateDevice);
 
 module.exports = router;

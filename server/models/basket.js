@@ -7,9 +7,23 @@ const UserBasket = new mongoose.Schema({
     required: true,
   },
   devices: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'device',
+    device: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'device',
+    },
+    amount: {
+      type: Number,
+      default: 0,
+    },
+    total_price: {
+      type: Number,
+      default: 0,
+    },
   }],
+  total_price: {
+    type: Number,
+    default: 0,
+  },
 });
 
 module.exports = mongoose.model('basket', UserBasket);
