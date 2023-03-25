@@ -1,6 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const uuid = require('uuid');
 const path = require('path');
+const jwt = require('jsonwebtoken');
 const Device = require('../models/device');
 const DeviceRating = require('../models/rating');
 const deviceInfo = require('../models/deviceInfo');
@@ -61,23 +62,36 @@ class DeviceController {
   async getOne(req, res) {
     const { id } = req.params;
     const info = await deviceInfo.find({ deviceId: id });
+    const userToken = req.headers.authorization.split(' ')[1];
+    const userInfo = jwt.decode(userToken);
+    const userRating = await DeviceRating.find({ userId: userInfo.id, deviceId: id });
+    let canRate = false;
+    if (!userRating.length > 0) canRate = true;
     Device.findOne({ _id: id })
-      .then((device) => res.send({ info, device }));
+      .then((device) => res.send({ info, device, canRate }));
   }
 
-  async rateDevice(req, res) {
-    const { id } = req.params;
-    const { userId, rate } = req.body;
-    await DeviceRating.create({
-      deviceId: id,
-      userId,
-      rate,
-    });
-    const ratings = await DeviceRating.find({ deviceId: id });
-    const rateSum = ratings.reduce((acc, number) => acc + number, 0);
-    const avgRate = rateSum / ratings.length;
-    const ratedDevice = await Device.findByIdAndUpdate(id, { rating: avgRate }, { new: true });
-    res.send(ratedDevice);
+  async rateDevice(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { userId, rate } = req.body;
+      await DeviceRating.create({
+        deviceId: id,
+        userId,
+        rate,
+      });
+      const ratings = await DeviceRating.find({ deviceId: id });
+      const rateSum = ratings.reduce((acc, number) => acc + number.rate, 0);
+      const avgRate = (rateSum / ratings.length).toFixed(2);
+      const ratedDevice = await Device.findByIdAndUpdate(id, { rating: avgRate }, { new: true });
+      const info = await deviceInfo.find({ deviceId: id });
+      const userRating = await DeviceRating.find({ userId, deviceId: id });
+      let canRate = false;
+      if (!userRating.length > 0) canRate = true;
+      res.send({ ratedDevice, info, canRate });
+    } catch (e) {
+      next(ApiError.badRequest('Что-то не то'));
+    }
   }
 }
 
