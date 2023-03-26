@@ -14,6 +14,8 @@ const { DB_URL } = process.env;
 
 const app = express();
 mongoose.connect(DB_URL);
+console.log(DB_URL, PORT);
+console.log('app is running');
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.resolve(__dirname, 'static')));

@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+ app:
+  build: .
+  ports:
+   - 4001:4000
+   - 9229:9229
+  environment:
+   - NODE_ENV=production
+   - PORT=4000
+   - DB_URL=mongodb://mongo:27017/online_store
+   - DB_NAME=online_store
+   - SECRET_KEY=super_secret_key
+  volumes:
+   - ./:/app
+   - /app/node_modules
+
+ mongo:
+  image: mongo
+  ports:
+   - 27018:27017
+  volumes:
+   - mongodb:/data/db
+   - mongodb_config:/data/configdb
+volumes:
+ mongodb:
+ mongodb_config:
